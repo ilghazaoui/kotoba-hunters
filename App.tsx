@@ -71,7 +71,7 @@ const App: React.FC = () => {
     setIsGameActive(true);
   }, [allWords, gridSize]);
 
-  // Charger les mots quand le niveau change
+  // Load words when the JLPT level changes
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
