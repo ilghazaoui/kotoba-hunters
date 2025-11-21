@@ -5,7 +5,7 @@ import {getWordCountForGridSize} from './constants';
 import {JlptLevel, loadWordsForLevel} from './utils/wordSource';
 import GridBoard from './components/Grid';
 import WordList from './components/WordList';
-import {Moon, RefreshCw, Sun, Trophy} from 'lucide-react';
+import {Moon, RefreshCw, Sun, Trophy, Settings} from 'lucide-react';
 import {playSound} from './utils/sound';
 
 const LEVELS: JlptLevel[] = ['N5', 'N4', 'N3', 'N2', 'N1'];
@@ -26,6 +26,7 @@ const App: React.FC = () => {
   const [gridSize, setGridSize] = useState<number>(7);
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
   const [isGameActive, setIsGameActive] = useState<boolean>(false);
+  const [showControls, setShowControls] = useState<boolean>(true);
 
   // Initialize dark mode from system preference / localStorage
   useEffect(() => {
@@ -155,7 +156,7 @@ const App: React.FC = () => {
 
   return (
     <div className={`min-h-screen flex flex-col items-center justify-start p-4 font-sans pb-32 ${darkMode ? 'bg-slate-900' : 'bg-slate-100'}`}>
-      <header className="w-full max-w-[400px] flex items-center justify-between mb-5">
+      <header className="w-full max-w-[400px] flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <span
             className={`inline-flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold
@@ -175,6 +176,24 @@ const App: React.FC = () => {
           </h1>
         </div>
         <div className="flex items-center gap-2">
+          {/* Controls visibility toggle (gear) */}
+          <button
+            onClick={() => {
+              playSound('ui-soft', { vibrate: 10 });
+              setShowControls(prev => !prev);
+            }}
+            className={`p-2 rounded-full shadow-sm border transition-all
+              ${showControls
+                ? darkMode
+                  ? 'bg-slate-100 text-slate-900 border-slate-200'
+                  : 'bg-slate-900 text-white border-slate-900'
+                : darkMode
+                  ? 'bg-slate-800 text-slate-100 border-slate-600 hover:bg-slate-700'
+                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}`}
+            aria-label={showControls ? 'Hide level and grid size controls' : 'Show level and grid size controls'}
+          >
+            <Settings className="w-5 h-5" />
+          </button>
           <button
             onClick={startNewGame}
             className={`p-2 rounded-full shadow-sm border transition-all disabled:opacity-50
@@ -198,67 +217,71 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      {/* Level selector above the grid */}
-      <div className="w-full max-w-[400px] mb-2 flex items-center justify-center gap-2">
-        {LEVELS.map(level => (
-          <button
-            key={level}
-            type="button"
-            onClick={() => {
-              if (level !== selectedLevel) {
-                playSound('ui-soft', { vibrate: 10 });
-                setSelectedLevel(level);
-              }
-            }}
-            disabled={isLoadingWords && level === selectedLevel}
-            className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors
-              ${
-                level === selectedLevel
-                  ? darkMode
-                    ? 'bg-slate-100 text-slate-900 border-slate-200'
-                    : 'bg-slate-900 text-white border-slate-900'
-                  : darkMode
-                    ? 'bg-slate-800 text-slate-100 border-slate-600 hover:bg-slate-700'
-                    : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-              }
-              ${isLoadingWords && level === selectedLevel ? 'opacity-60 cursor-default' : ''}
-            `}
-          >
-            {level}
-          </button>
-        ))}
-      </div>
+      {showControls && (
+        <>
+          {/* Level selector above the grid */}
+          <div className="w-full max-w-[400px] mb-2 flex items-center justify-center gap-2">
+            {LEVELS.map(level => (
+              <button
+                key={level}
+                type="button"
+                onClick={() => {
+                  if (level !== selectedLevel) {
+                    playSound('ui-soft', { vibrate: 10 });
+                    setSelectedLevel(level);
+                  }
+                }}
+                disabled={isLoadingWords && level === selectedLevel}
+                className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors
+                  ${
+                    level === selectedLevel
+                      ? darkMode
+                        ? 'bg-slate-100 text-slate-900 border-slate-200'
+                        : 'bg-slate-900 text-white border-slate-900'
+                      : darkMode
+                        ? 'bg-slate-800 text-slate-100 border-slate-600 hover:bg-slate-700'
+                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                  }
+                  ${isLoadingWords && level === selectedLevel ? 'opacity-60 cursor-default' : ''}
+                `}
+              >
+                {level}
+              </button>
+            ))}
+          </div>
 
-      {/* Grid size selector (cute, mobile-friendly) */}
-      <div className="w-full max-w-[400px] mb-3 flex items-center justify-center gap-1 text-xs">
-        <div className="flex flex-wrap justify-center gap-1">
-          {GRID_SIZES.map(size => (
-            <button
-              key={size}
-              type="button"
-              onClick={() => {
-                if (size !== gridSize) {
-                  playSound('ui-soft', { vibrate: 10 });
-                  setGridSize(size);
-                }
-              }}
-              className={`px-2 py-1 rounded-full border font-semibold min-w-[44px]
-                ${
-                  size === gridSize
-                    ? darkMode
-                      ? 'bg-slate-100 text-slate-900 border-slate-200'
-                      : 'bg-slate-900 text-white border-slate-900'
-                    : darkMode
-                      ? 'bg-slate-800 text-slate-100 border-slate-600 hover:bg-slate-700'
-                      : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-                }
-              `}
-            >
-              {size}×{size}
-            </button>
-          ))}
-        </div>
-      </div>
+          {/* Grid size selector (cute, mobile-friendly) */}
+          <div className="w-full max-w-[400px] mb-3 flex items-center justify-center gap-1 text-xs">
+            <div className="flex flex-wrap justify-center gap-1">
+              {GRID_SIZES.map(size => (
+                <button
+                  key={size}
+                  type="button"
+                  onClick={() => {
+                    if (size !== gridSize) {
+                      playSound('ui-soft', { vibrate: 10 });
+                      setGridSize(size);
+                    }
+                  }}
+                  className={`px-2 py-1 rounded-full border font-semibold min-w-[44px]
+                    ${
+                      size === gridSize
+                        ? darkMode
+                          ? 'bg-slate-100 text-slate-900 border-slate-200'
+                          : 'bg-slate-900 text-white border-slate-900'
+                        : darkMode
+                          ? 'bg-slate-800 text-slate-100 border-slate-600 hover:bg-slate-700'
+                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                    }
+                  `}
+                >
+                  {size}×{size}
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
 
       <main className="flex flex-col items-center w-full gap-4">
         {isLoadingWords && (
