@@ -5,7 +5,7 @@ import { WORD_COUNT_PER_GAME } from './constants';
 import { loadWordsForLevel, JlptLevel } from './utils/wordSource';
 import GridBoard from './components/Grid';
 import WordList from './components/WordList';
-import { RefreshCw, Trophy } from 'lucide-react';
+import { RefreshCw, Trophy, Moon, Sun } from 'lucide-react';
 
 const LEVELS: JlptLevel[] = ['N5', 'N4', 'N3', 'N2', 'N1'];
 
@@ -19,6 +19,7 @@ const App: React.FC = () => {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedLevel, setSelectedLevel] = useState<JlptLevel>('N5');
   const [showJapaneseHints, setShowJapaneseHints] = useState<boolean>(false);
+  const [darkMode, setDarkMode] = useState<boolean>(false);
 
   const startNewGame = useCallback(() => {
     if (!allWords.length) {
@@ -132,20 +133,34 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-start p-4 font-sans pb-32">
+    <div className={`min-h-screen flex flex-col items-center justify-start p-4 font-sans pb-32 ${darkMode ? 'bg-slate-900' : 'bg-slate-100'}`}>
       <header className="w-full max-w-[400px] flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-black text-slate-800 tracking-tight">Kotoba Hunters</h1>
-        <button
-          onClick={startNewGame}
-          className="p-2 bg-white rounded-full shadow-sm border border-slate-200 text-slate-600 hover:bg-slate-50 active:scale-95 transition-all disabled:opacity-50"
-          aria-label="Restart Game"
-          disabled={isLoadingWords || !!loadError || !allWords.length}
-        >
-          <RefreshCw className="w-5 h-5" />
-        </button>
+        <h1 className={`text-2xl font-black tracking-tight ${darkMode ? 'text-white' : 'text-slate-800'}`}>Kotoba Hunters</h1>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={startNewGame}
+            className={`p-2 rounded-full shadow-sm border transition-all disabled:opacity-50
+              ${darkMode ? 'bg-slate-800 text-slate-100 border-slate-600 hover:bg-slate-700' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 active:scale-95'}`}
+            aria-label="Restart Game"
+            disabled={isLoadingWords || !!loadError || !allWords.length}
+          >
+            <RefreshCw className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => setDarkMode(prev => !prev)}
+            className={`p-2 rounded-full shadow-sm border transition-all ${darkMode ? 'bg-yellow-300 text-slate-900 border-yellow-400' : 'bg-slate-800 text-white border-slate-700'}`}
+            aria-label="Toggle dark mode"
+          >
+            {darkMode ? (
+              <Sun className="w-5 h-5" />
+            ) : (
+              <Moon className="w-5 h-5" />
+            )}
+          </button>
+        </div>
       </header>
 
-      {/* Sélecteur de niveau, en haut de la grille */}
+      {/* Level selector above the grid */}
       <div className="w-full max-w-[400px] mb-3 flex items-center justify-center gap-2">
         {LEVELS.map(level => (
           <button
@@ -156,8 +171,12 @@ const App: React.FC = () => {
             className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors
               ${
                 level === selectedLevel
-                  ? 'bg-slate-900 text-white border-slate-900'
-                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                  ? darkMode
+                    ? 'bg-slate-100 text-slate-900 border-slate-200'
+                    : 'bg-slate-900 text-white border-slate-900'
+                  : darkMode
+                    ? 'bg-slate-800 text-slate-100 border-slate-600 hover:bg-slate-700'
+                    : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
               }
               ${isLoadingWords && level === selectedLevel ? 'opacity-60 cursor-default' : ''}
             `}
@@ -169,7 +188,9 @@ const App: React.FC = () => {
 
       <main className="flex flex-col items-center w-full gap-4">
         {isLoadingWords && (
-          <p className="text-sm text-slate-500">Loading {selectedLevel} words...</p>
+          <p className={`text-sm ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+            Loading {selectedLevel} words...
+          </p>
         )}
         {loadError && (
           <p className="text-sm text-red-600">Failed to load words: {loadError}</p>
@@ -178,7 +199,12 @@ const App: React.FC = () => {
           <>
             <div className="relative w-full flex flex-col items-center gap-2">
               <div className="w-full flex justify-center">
-                <GridBoard grid={grid as any} foundWords={foundWordIds} onWordCheck={handleWordCheck} />
+                <GridBoard
+                  grid={grid as any}
+                  foundWords={foundWordIds}
+                  onWordCheck={handleWordCheck}
+                  darkMode={darkMode}
+                />
               </div>
 
               {/* Show hints toggle under the grid */}
@@ -189,8 +215,12 @@ const App: React.FC = () => {
                 className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors
                   ${
                     showJapaneseHints
-                      ? 'bg-slate-900 text-white border-slate-900'
-                      : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                      ? darkMode
+                        ? 'bg-slate-100 text-slate-900 border-slate-200'
+                        : 'bg-slate-900 text-white border-slate-900'
+                      : darkMode
+                        ? 'bg-slate-800 text-slate-100 border-slate-600 hover:bg-slate-700'
+                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                   }
                   ${isLoadingWords || !allWords.length ? 'opacity-60 cursor-default' : ''}
                 `}
@@ -204,6 +234,7 @@ const App: React.FC = () => {
               words={gameWords}
               foundWordIds={foundWordIds}
               showJapaneseHints={showJapaneseHints}
+              darkMode={darkMode}
             />
           </>
         )}

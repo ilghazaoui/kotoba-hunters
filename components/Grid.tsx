@@ -7,9 +7,10 @@ interface GridProps {
   grid: Cell[][];
   foundWords: string[]; // IDs of found words
   onWordCheck: (word: string) => Word | null; // Returns matched word object or null
+  darkMode?: boolean;
 }
 
-const GridBoard: React.FC<GridProps> = ({ grid, foundWords, onWordCheck }) => {
+const GridBoard: React.FC<GridProps> = ({ grid, foundWords, onWordCheck, darkMode = false }) => {
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectionStart, setSelectionStart] = useState<Coordinate | null>(null);
   const [selectionEnd, setSelectionEnd] = useState<Coordinate | null>(null);
@@ -93,9 +94,10 @@ const GridBoard: React.FC<GridProps> = ({ grid, foundWords, onWordCheck }) => {
   };
   
   return (
-    <div 
-      className="grid gap-1 p-3 select-none touch-none bg-white rounded-xl shadow-lg border-2 border-slate-200 mx-auto"
-      style={{ 
+    <div
+      className={`grid gap-1 p-3 select-none touch-none rounded-xl shadow-lg border-2 mx-auto
+        ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}
+      style={{
         gridTemplateColumns: `repeat(${GRID_SIZE}, minmax(0, 1fr))`,
         width: '100%',
         maxWidth: '400px', // Max width for PC
@@ -109,9 +111,11 @@ const GridBoard: React.FC<GridProps> = ({ grid, foundWords, onWordCheck }) => {
           const isSelected = isCellSelected(rIndex, cIndex);
           const isFound = cell.isPartOfWord; 
 
-          let bgClass = "bg-slate-50";
-          if (isFound) bgClass = "bg-green-100 text-green-800 border-green-200";
-          if (isSelected) bgClass = "bg-blue-500 text-white scale-105 z-10 shadow-md transform transition-transform";
+          let bgClass = darkMode ? 'bg-slate-700 text-slate-50 border-slate-600' : 'bg-slate-50 text-slate-900 border-slate-200';
+          if (isFound) bgClass = darkMode
+            ? 'bg-emerald-900 text-emerald-200 border-emerald-700'
+            : 'bg-green-100 text-green-800 border-green-200';
+          if (isSelected) bgClass = 'bg-blue-500 text-white scale-105 z-10 shadow-md transform transition-transform';
 
           return (
             <div
@@ -123,7 +127,6 @@ const GridBoard: React.FC<GridProps> = ({ grid, foundWords, onWordCheck }) => {
                 flex items-center justify-center 
                 text-lg sm:text-xl md:text-2xl font-bold rounded-md cursor-pointer 
                 transition-colors duration-150
-                border ${isFound ? 'border-green-300' : 'border-slate-200'}
               `}
               onPointerDown={(e) => handlePointerDown(rIndex, cIndex, e)}
               onPointerMove={handlePointerMove}
