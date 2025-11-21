@@ -45,15 +45,17 @@ export const generateGameGrid = (allWords: Word[], count: number, size: number):
   const gridSize = size;
   let grid = createEmptyGrid(gridSize);
   const placedWords: Word[] = [];
-  
+
+  // Filter out too-short words (single kana) and words longer than grid
+  const candidateWords = allWords.filter(w => w.hiragana.length >= 2 && w.hiragana.length <= gridSize);
+
   // Shuffle words
-  const shuffled = [...allWords].sort(() => 0.5 - Math.random());
-  
+  const shuffled = [...candidateWords].sort(() => 0.5 - Math.random());
+
   for (const wordObj of shuffled) {
     if (placedWords.length >= count) break;
 
     const word = wordObj.hiragana;
-    if (word.length > gridSize) continue;
 
     // Try placing word 50 times before giving up and skipping it
     let placed = false;

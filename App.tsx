@@ -9,6 +9,7 @@ import { RefreshCw, Trophy, Moon, Sun } from 'lucide-react';
 
 const LEVELS: JlptLevel[] = ['N5', 'N4', 'N3', 'N2', 'N1'];
 const GRID_SIZES = [4, 5, 6, 7, 8, 9, 10];
+const DARK_MODE_STORAGE_KEY = 'kotoba-hunters:dark-mode';
 
 const App: React.FC = () => {
   const [gameWords, setGameWords] = useState<Word[]>([]);
@@ -22,6 +23,26 @@ const App: React.FC = () => {
   const [showJapaneseHints, setShowJapaneseHints] = useState<boolean>(false);
   const [darkMode, setDarkMode] = useState<boolean>(false);
   const [gridSize, setGridSize] = useState<number>(7);
+
+  // Initialize dark mode from system preference / localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem(DARK_MODE_STORAGE_KEY);
+    if (stored === 'true') {
+      setDarkMode(true);
+      return;
+    }
+    if (stored === 'false') {
+      setDarkMode(false);
+      return;
+    }
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    setDarkMode(prefersDark);
+  }, []);
+
+  // Persist dark mode changes
+  useEffect(() => {
+    localStorage.setItem(DARK_MODE_STORAGE_KEY, darkMode ? 'true' : 'false');
+  }, [darkMode]);
 
   const startNewGame = useCallback(() => {
     if (!allWords.length) {
@@ -285,9 +306,9 @@ const App: React.FC = () => {
               <Trophy className={darkMode ? 'w-8 h-8 text-yellow-300' : 'w-8 h-8 text-yellow-600'} />
             </div>
             <h2
-              className={`text-2xl font-bold mb-2 ${darkMode ? 'text-slate-50' : 'text-slate-900'}`}
+              className={`text-2xl font-bold mb-6 ${darkMode ? 'text-slate-50' : 'text-slate-900'}`}
             >
-              Yatta! (やった!)
+              やった!!
             </h2>
             <p className={darkMode ? 'text-slate-300 mb-6' : 'text-slate-600 mb-6'}>
               You found all {gameWords.length} words! Great job practicing your Hiragana.
