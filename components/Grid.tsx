@@ -10,7 +10,7 @@ interface GridProps {
   darkMode?: boolean;
 }
 
-const GridBoard: React.FC<GridProps> = ({ grid, foundWords, onWordCheck, darkMode = false }) => {
+const GridBoard: React.FC<GridProps> = ({ grid, onWordCheck, darkMode = false }) => {
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectionStart, setSelectionStart] = useState<Coordinate | null>(null);
   const [selectionEnd, setSelectionEnd] = useState<Coordinate | null>(null);
@@ -86,7 +86,8 @@ const GridBoard: React.FC<GridProps> = ({ grid, foundWords, onWordCheck, darkMod
     if (!matched && selectedCells.length >= 2) {
       const reversedCoords = [...selectedCells].reverse();
       const reversedString = getWordFromCells(grid, reversedCoords);
-      matched = onWordCheck(reversedString, reversedCoords);
+
+      onWordCheck(reversedString, reversedCoords);
     }
 
     setSelectionStart(null);

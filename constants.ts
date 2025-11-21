@@ -1,5 +1,3 @@
-export const WORD_COUNT_PER_GAME = 12;
-
 export const getWordCountForGridSize = (size: number): number => {
     if (size >= 10) return 24;
     if (size >= 9) return 20;

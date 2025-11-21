@@ -1,5 +1,5 @@
-import { Word } from '../types';
-import { parseJlptCsv } from './csvLoader';
+import {Word} from '../types';
+import {parseJlptCsv} from './csvLoader';
 
 export type JlptLevel = 'N1' | 'N2' | 'N3' | 'N4' | 'N5';
 
@@ -20,18 +20,9 @@ export async function loadWordsForLevel(level: JlptLevel): Promise<Word[]> {
   const text = await response.text();
 
   try {
-    const words = parseJlptCsv(text);
-    if (!words.length) {
-      throw new Error(`No ${level} words found in CSV after parsing`);
-    }
-    return words;
+    return parseJlptCsv(text);
   } catch (err) {
     console.error(`Error while parsing ${level} CSV`, err);
     throw err instanceof Error ? err : new Error(`Unknown error while parsing ${level} CSV`);
   }
-}
-
-// Backward-compatible N5-specific loader used initially
-export async function loadN5Words(): Promise<Word[]> {
-  return loadWordsForLevel('N5');
 }

@@ -114,10 +114,9 @@ export function parseJlptCsv(csvText: string): Word[] {
     });
   }
 
-  return words;
-}
+  if (!words.length) {
+    throw new Error(`No words found in CSV after parsing`);
+  }
 
-// Backward-compatible wrapper for N5 only (garde la même signature)
-export function parseN5Csv(csvText: string): Word[] {
-  return parseJlptCsv(csvText);
+  return words;
 }

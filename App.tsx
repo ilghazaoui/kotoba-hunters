@@ -99,7 +99,7 @@ const App: React.FC = () => {
         if (!cancelled) setIsLoadingWords(false);
       }
     };
-    load();
+    load().then();
     return () => {
       cancelled = true;
     };

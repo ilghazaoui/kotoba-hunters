@@ -15,12 +15,6 @@ export interface Cell {
 
 export type Grid = Cell[][];
 
-export interface GameState {
-  grid: Grid;
-  targetWords: Word[];
-  foundWordIds: string[];
-}
-
 export interface Coordinate {
   row: number;
   col: number;
