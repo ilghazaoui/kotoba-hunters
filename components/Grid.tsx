@@ -1,6 +1,7 @@
 import React, { useRef, useState, useCallback } from 'react';
 import { Cell, Coordinate, Word } from '../types';
 import { getSelectedCells, getWordFromCells } from '../utils/gridGenerator';
+import { playSound } from '../utils/sound';
 
 interface GridProps {
   grid: Cell[][];
@@ -34,7 +35,9 @@ const GridBoard: React.FC<GridProps> = ({ grid, foundWords, onWordCheck, darkMod
     setSelectionStart(start);
     setSelectionEnd(start);
     setSelectedCells([start]);
-    
+
+    playSound('tile-touch', { vibrate: 10 });
+
     // Capture pointer to handle moves outside the initial cell and ensure we don't lose the drag
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   };
@@ -55,9 +58,11 @@ const GridBoard: React.FC<GridProps> = ({ grid, foundWords, onWordCheck, darkMod
       const c = parseInt(cellDiv.getAttribute('data-col') || '-1');
       
       if (r >= 0 && c >= 0) {
-        // Only update if the cell has changed from the current end selection
-        if (!selectionEnd || r !== selectionEnd.row || c !== selectionEnd.col) {
+        const isNewCell = !selectionEnd || r !== selectionEnd.row || c !== selectionEnd.col;
+        if (isNewCell) {
           updateSelection({ row: r, col: c });
+          // Play a very soft feedback for each new tile in the drag path
+          playSound('tile-touch', { vibrate: 5 });
         }
       }
     }

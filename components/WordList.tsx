@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Word } from '../types';
 import { ChevronDown, ChevronUp, Check } from 'lucide-react';
+import { playSound } from '../utils/sound';
 
 interface WordListProps {
   words: Word[];
@@ -23,7 +24,10 @@ const WordList: React.FC<WordListProps> = ({ words, foundWordIds, showJapaneseHi
       >
         {/* Toggle Button (Always visible at bottom) */}
         <button
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={() => {
+            setIsOpen(!isOpen);
+            playSound('ui-soft', { vibrate: 8 });
+          }}
           className={`flex items-center justify-between w-full p-4 transition-colors rounded-t-none first:rounded-t-xl
             ${darkMode ? 'bg-slate-800 hover:bg-slate-700' : 'bg-slate-50 hover:bg-slate-100'}`}
         >

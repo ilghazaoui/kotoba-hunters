@@ -6,6 +6,7 @@ import { loadWordsForLevel, JlptLevel } from './utils/wordSource';
 import GridBoard from './components/Grid';
 import WordList from './components/WordList';
 import { RefreshCw, Trophy, Moon, Sun } from 'lucide-react';
+import { playSound } from './utils/sound';
 
 const LEVELS: JlptLevel[] = ['N5', 'N4', 'N3', 'N2', 'N1'];
 const GRID_SIZES = [4, 5, 6, 7, 8, 9, 10];
@@ -101,8 +102,7 @@ const App: React.FC = () => {
     );
 
     if (matchedWord) {
-      // Vibrate on mobile for feedback
-      if (navigator.vibrate) navigator.vibrate(50);
+      playSound('word-match', { vibrate: 40 });
 
       const newFoundIds = [...foundWordIds, matchedWord.id];
       setFoundWordIds(newFoundIds);
@@ -119,7 +119,10 @@ const App: React.FC = () => {
       });
 
       if (newFoundIds.length === gameWords.length) {
-        setTimeout(() => setShowWinModal(true), 500);
+        setTimeout(() => {
+          playSound('game-complete', { vibrate: [50, 80, 50] });
+          setShowWinModal(true);
+        }, 300);
       }
 
       return matchedWord;
@@ -178,7 +181,12 @@ const App: React.FC = () => {
           <button
             key={level}
             type="button"
-            onClick={() => setSelectedLevel(level)}
+            onClick={() => {
+              if (level !== selectedLevel) {
+                playSound('ui-soft', { vibrate: 10 });
+                setSelectedLevel(level);
+              }
+            }}
             disabled={isLoadingWords && level === selectedLevel}
             className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors
               ${
@@ -205,7 +213,12 @@ const App: React.FC = () => {
             <button
               key={size}
               type="button"
-              onClick={() => setGridSize(size)}
+              onClick={() => {
+                if (size !== gridSize) {
+                  playSound('ui-soft', { vibrate: 10 });
+                  setGridSize(size);
+                }
+              }}
               className={`px-2 py-1 rounded-full border font-semibold min-w-[44px]
                 ${
                   size === gridSize
