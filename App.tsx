@@ -157,8 +157,25 @@ const App: React.FC = () => {
 
   return (
     <div className={`min-h-screen flex flex-col items-center justify-start p-4 font-sans pb-32 ${darkMode ? 'bg-slate-900' : 'bg-slate-100'}`}>
-      <header className="w-full max-w-[400px] flex items-center justify-between mb-4">
-        <h1 className={`text-2xl font-black tracking-tight ${darkMode ? 'text-white' : 'text-slate-800'}`}>Kotoba Hunters</h1>
+      <header className="w-full max-w-[400px] flex items-center justify-between mb-5">
+        <div className="flex items-center gap-2">
+          <span
+            className={`inline-flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold
+              ${darkMode ? 'bg-slate-800 text-yellow-300' : 'bg-slate-900 text-yellow-300'}`}
+          >
+            わ
+          </span>
+          <h1
+            className={`flex items-baseline gap-1 tracking-tight ${
+              darkMode ? 'text-slate-50' : 'text-slate-800'
+            }`}
+          >
+            <span className="text-[1.9rem] leading-none font-black">Kotoba</span>
+            <span className="text-[0.8rem] font-semibold uppercase tracking-[0.3em] opacity-80">
+              Hunters
+            </span>
+          </h1>
+        </div>
         <div className="flex items-center gap-2">
           <button
             onClick={startNewGame}
