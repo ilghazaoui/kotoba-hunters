@@ -174,7 +174,6 @@ const App: React.FC = () => {
       )}
       
       <footer className="mt-8 text-slate-400 text-xs text-center">
-        <p>JLPT N5 Vocabulary Practice</p>
       </footer>
     </div>
   );
