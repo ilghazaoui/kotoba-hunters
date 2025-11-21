@@ -5,9 +5,10 @@ import { ChevronDown, ChevronUp, Check } from 'lucide-react';
 interface WordListProps {
   words: Word[];
   foundWordIds: string[];
+  showJapaneseHints?: boolean;
 }
 
-const WordList: React.FC<WordListProps> = ({ words, foundWordIds }) => {
+const WordList: React.FC<WordListProps> = ({ words, foundWordIds, showJapaneseHints = false }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const foundCount = foundWordIds.length;
@@ -41,6 +42,7 @@ const WordList: React.FC<WordListProps> = ({ words, foundWordIds }) => {
             <ul className="grid grid-cols-2 gap-2">
               {words.map((word) => {
                 const isFound = foundWordIds.includes(word.id);
+                const showJapanese = isFound || showJapaneseHints;
                 return (
                   <li 
                     key={word.id} 
@@ -57,10 +59,10 @@ const WordList: React.FC<WordListProps> = ({ words, foundWordIds }) => {
                       <span 
                         className={`
                           text-xs font-bold mt-0.5 transition-all duration-500
-                          ${isFound ? 'text-green-600 opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 h-0 overflow-hidden'}
+                          ${showJapanese ? 'text-slate-700 opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 h-0 overflow-hidden'}
                         `}
                       >
-                        {isFound ? `${word.kanji} (${word.hiragana})` : ''}
+                        {showJapanese ? `${word.kanji} (${word.hiragana})` : ''}
                       </span>
                     </div>
                     {isFound && <Check className="w-4 h-4 text-green-500 flex-shrink-0" />}

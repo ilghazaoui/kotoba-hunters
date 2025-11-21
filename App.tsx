@@ -11,13 +11,14 @@ const LEVELS: JlptLevel[] = ['N5', 'N4', 'N3', 'N2', 'N1'];
 
 const App: React.FC = () => {
   const [gameWords, setGameWords] = useState<Word[]>([]);
-  const [grid, setGrid] = useState<GridType>([]);
+  const [grid, setGrid] = useState<GridType[]>([] as any);
   const [foundWordIds, setFoundWordIds] = useState<string[]>([]);
   const [showWinModal, setShowWinModal] = useState(false);
   const [allWords, setAllWords] = useState<Word[]>([]);
   const [isLoadingWords, setIsLoadingWords] = useState<boolean>(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedLevel, setSelectedLevel] = useState<JlptLevel>('N5');
+  const [showJapaneseHints, setShowJapaneseHints] = useState<boolean>(false);
 
   const startNewGame = useCallback(() => {
     if (!allWords.length) {
@@ -28,6 +29,7 @@ const App: React.FC = () => {
     setGameWords(placedWords);
     setFoundWordIds([]);
     setShowWinModal(false);
+    setShowJapaneseHints(false);
   }, [allWords]);
 
   // Charger les mots quand le niveau change
@@ -38,9 +40,10 @@ const App: React.FC = () => {
       setLoadError(null);
       setAllWords([]);
       setGameWords([]);
-      setGrid([]);
+      setGrid([] as any);
       setFoundWordIds([]);
       setShowWinModal(false);
+      setShowJapaneseHints(false);
       try {
         const words = await loadWordsForLevel(selectedLevel);
         if (cancelled) return;
@@ -173,11 +176,35 @@ const App: React.FC = () => {
         )}
         {!isLoadingWords && !loadError && !!allWords.length && (
           <>
-            <div className="relative w-full flex justify-center">
-              <GridBoard grid={grid} foundWords={foundWordIds} onWordCheck={handleWordCheck} />
+            <div className="relative w-full flex flex-col items-center gap-2">
+              <div className="w-full flex justify-center">
+                <GridBoard grid={grid as any} foundWords={foundWordIds} onWordCheck={handleWordCheck} />
+              </div>
+
+              {/* Show hints toggle under the grid */}
+              <button
+                type="button"
+                onClick={() => setShowJapaneseHints(prev => !prev)}
+                disabled={isLoadingWords || !!loadError || !allWords.length}
+                className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors
+                  ${
+                    showJapaneseHints
+                      ? 'bg-slate-900 text-white border-slate-900'
+                      : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                  }
+                  ${isLoadingWords || !allWords.length ? 'opacity-60 cursor-default' : ''}
+                `}
+                aria-label={showJapaneseHints ? 'Hide Japanese hints' : 'Show Japanese hints'}
+              >
+                {showJapaneseHints ? 'Hide hints' : 'Show hints'}
+              </button>
             </div>
 
-            <WordList words={gameWords} foundWordIds={foundWordIds} />
+            <WordList
+              words={gameWords}
+              foundWordIds={foundWordIds}
+              showJapaneseHints={showJapaneseHints}
+            />
           </>
         )}
       </main>
