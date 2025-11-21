@@ -2,9 +2,10 @@ import { Word } from '../types';
 import { parseN5Csv } from './csvLoader';
 
 export async function loadN5Words(): Promise<Word[]> {
-  // URL du CSV basée sur le base path Vite ; fonctionne en dev et en build
-  const base = import.meta.env.BASE_URL || '/';
-  const csvUrl = `${base.replace(/\/$/, '')}/data/n5.csv`;
+  // Utiliser le base path Vite (utile pour GitHub Pages avec base: '/kotoba-hunters/')
+  const base = (import.meta as any).env?.BASE_URL ?? (import.meta as any).env?.VITE_BASE_URL ?? '/';
+  const normalizedBase = typeof base === 'string' ? base.replace(/\/$/, '') : '';
+  const csvUrl = `${normalizedBase || ''}/data/n5.csv` || '/data/n5.csv';
 
   const response = await fetch(csvUrl);
   if (!response.ok) {
