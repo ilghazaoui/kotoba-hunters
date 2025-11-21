@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Word, Grid as GridType } from './types';
 import { generateGameGrid } from './utils/gridGenerator';
-import { JLPT_N5_WORDS, WORD_COUNT_PER_GAME } from './constants';
+import { WORD_COUNT_PER_GAME } from './constants';
+import { loadN5Words } from './utils/wordSource';
 import GridBoard from './components/Grid';
 import WordList from './components/WordList';
 import { RefreshCw, Trophy } from 'lucide-react';
@@ -11,18 +12,49 @@ const App: React.FC = () => {
   const [grid, setGrid] = useState<GridType>([]);
   const [foundWordIds, setFoundWordIds] = useState<string[]>([]);
   const [showWinModal, setShowWinModal] = useState(false);
+  const [allN5Words, setAllN5Words] = useState<Word[]>([]);
+  const [isLoadingWords, setIsLoadingWords] = useState<boolean>(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const startNewGame = useCallback(() => {
-    const { grid: newGrid, placedWords } = generateGameGrid(JLPT_N5_WORDS, WORD_COUNT_PER_GAME);
+    if (!allN5Words.length) {
+      return;
+    }
+    const { grid: newGrid, placedWords } = generateGameGrid(allN5Words, WORD_COUNT_PER_GAME);
     setGrid(newGrid);
     setGameWords(placedWords);
     setFoundWordIds([]);
     setShowWinModal(false);
+  }, [allN5Words]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      setIsLoadingWords(true);
+      setLoadError(null);
+      try {
+        const words = await loadN5Words();
+        if (cancelled) return;
+        setAllN5Words(words);
+      } catch (e) {
+        if (cancelled) return;
+        const msg = e instanceof Error ? e.message : 'Unknown error while loading N5 words';
+        setLoadError(msg);
+      } finally {
+        if (!cancelled) setIsLoadingWords(false);
+      }
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
-    startNewGame();
-  }, [startNewGame]);
+    if (allN5Words.length) {
+      startNewGame();
+    }
+  }, [allN5Words, startNewGame]);
 
   const handleWordCheck = (selectedString: string): Word | null => {
     // Check if the selected string matches any of the game words
@@ -90,23 +122,34 @@ const App: React.FC = () => {
         <h1 className="text-2xl font-black text-slate-800 tracking-tight">Kotoba Hunters</h1>
         <button 
           onClick={startNewGame}
-          className="p-2 bg-white rounded-full shadow-sm border border-slate-200 text-slate-600 hover:bg-slate-50 active:scale-95 transition-all"
+          className="p-2 bg-white rounded-full shadow-sm border border-slate-200 text-slate-600 hover:bg-slate-50 active:scale-95 transition-all disabled:opacity-50"
           aria-label="Restart Game"
+          disabled={isLoadingWords || !!loadError || !allN5Words.length}
         >
           <RefreshCw className="w-5 h-5" />
         </button>
       </header>
 
       <main className="flex flex-col items-center w-full gap-4">
-        <div className="relative w-full flex justify-center">
-           <GridBoard 
-             grid={grid} 
-             foundWords={foundWordIds} 
-             onWordCheck={handleWordCheck} 
-           />
-        </div>
+        {isLoadingWords && (
+          <p className="text-sm text-slate-500">Loading N5 words...</p>
+        )}
+        {loadError && (
+          <p className="text-sm text-red-600">Failed to load words: {loadError}</p>
+        )}
+        {!isLoadingWords && !loadError && !!allN5Words.length && (
+          <>
+            <div className="relative w-full flex justify-center">
+              <GridBoard
+                grid={grid}
+                foundWords={foundWordIds}
+                onWordCheck={handleWordCheck}
+              />
+            </div>
 
-        <WordList words={gameWords} foundWordIds={foundWordIds} />
+            <WordList words={gameWords} foundWordIds={foundWordIds} />
+          </>
+        )}
       </main>
 
       {/* Win Modal */}
