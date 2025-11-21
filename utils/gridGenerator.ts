@@ -1,5 +1,5 @@
 import { Cell, Word, Grid, Coordinate } from '../types';
-import { HIRAGANA_CHARS, GRID_SIZE } from '../constants';
+import { HIRAGANA_CHARS } from '../constants';
 
 const DIRECTIONS = [
   [0, 1],   // Horizontal
@@ -41,8 +41,9 @@ const placeWord = (grid: Grid, word: string, row: number, col: number, dr: numbe
   }
 };
 
-export const generateGameGrid = (allWords: Word[], count: number): { grid: Grid; placedWords: Word[] } => {
-  let grid = createEmptyGrid(GRID_SIZE);
+export const generateGameGrid = (allWords: Word[], count: number, size: number): { grid: Grid; placedWords: Word[] } => {
+  const gridSize = size;
+  let grid = createEmptyGrid(gridSize);
   const placedWords: Word[] = [];
   
   // Shuffle words
@@ -52,14 +53,14 @@ export const generateGameGrid = (allWords: Word[], count: number): { grid: Grid;
     if (placedWords.length >= count) break;
 
     const word = wordObj.hiragana;
+    if (word.length > gridSize) continue;
+
     // Try placing word 50 times before giving up and skipping it
     let placed = false;
     for (let attempt = 0; attempt < 50; attempt++) {
-      const dir = DIRECTIONS[Math.floor(Math.random() * DIRECTIONS.length)];
-      const [dr, dc] = dir;
-      
-      const startRow = Math.floor(Math.random() * GRID_SIZE);
-      const startCol = Math.floor(Math.random() * GRID_SIZE);
+      const [dr, dc] = DIRECTIONS[Math.floor(Math.random() * DIRECTIONS.length)];
+      const startRow = Math.floor(Math.random() * gridSize);
+      const startCol = Math.floor(Math.random() * gridSize);
 
       if (canPlaceWord(grid, word, startRow, startCol, dr, dc)) {
         placeWord(grid, word, startRow, startCol, dr, dc);
@@ -71,8 +72,8 @@ export const generateGameGrid = (allWords: Word[], count: number): { grid: Grid;
   }
 
   // Fill empty cells
-  for (let r = 0; r < GRID_SIZE; r++) {
-    for (let c = 0; c < GRID_SIZE; c++) {
+  for (let r = 0; r < gridSize; r++) {
+    for (let c = 0; c < gridSize; c++) {
       if (grid[r][c].char === '') {
         grid[r][c].char = HIRAGANA_CHARS[Math.floor(Math.random() * HIRAGANA_CHARS.length)];
       }

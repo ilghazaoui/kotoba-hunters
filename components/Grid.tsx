@@ -1,7 +1,6 @@
 import React, { useRef, useState, useCallback } from 'react';
 import { Cell, Coordinate, Word } from '../types';
 import { getSelectedCells, getWordFromCells } from '../utils/gridGenerator';
-import { GRID_SIZE } from '../constants';
 
 interface GridProps {
   grid: Cell[][];
@@ -20,10 +19,10 @@ const GridBoard: React.FC<GridProps> = ({ grid, foundWords, onWordCheck, darkMod
 
   const updateSelection = useCallback((end: Coordinate) => {
     if (!selectionStart) return;
-    const cells = getSelectedCells(selectionStart, end, GRID_SIZE);
+    const cells = getSelectedCells(selectionStart, end, grid.length);
     setSelectedCells(cells);
     setSelectionEnd(end);
-  }, [selectionStart]);
+  }, [selectionStart, grid.length]);
 
   const handlePointerDown = (r: number, c: number, e: React.PointerEvent) => {
     e.preventDefault();
@@ -93,23 +92,31 @@ const GridBoard: React.FC<GridProps> = ({ grid, foundWords, onWordCheck, darkMod
     return selectedCells.some(cell => cell.row === r && cell.col === c);
   };
   
+  const size = grid.length || 0;
+
+  const baseFontClasses =
+    size >= 10 ? 'text-lg sm:text-xl md:text-2xl' :
+    size >= 8 ? 'text-xl sm:text-2xl md:text-3xl' :
+    size >= 6 ? 'text-2xl sm:text-3xl md:text-4xl' :
+                'text-3xl sm:text-4xl md:text-5xl';
+
   return (
     <div
       className={`grid gap-1 p-3 select-none touch-none rounded-xl shadow-lg border-2 mx-auto
         ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}
       style={{
-        gridTemplateColumns: `repeat(${GRID_SIZE}, minmax(0, 1fr))`,
+        gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
         width: '100%',
-        maxWidth: '400px', // Max width for PC
+        maxWidth: '400px',
         aspectRatio: '1/1',
-        maxHeight: '60vh' // Limit height on landscape devices to ensure visibility
+        maxHeight: '60vh',
       }}
       ref={containerRef}
     >
       {grid.map((row, rIndex) => (
         row.map((cell, cIndex) => {
           const isSelected = isCellSelected(rIndex, cIndex);
-          const isFound = cell.isPartOfWord; 
+          const isFound = cell.isPartOfWord;
 
           let bgClass = darkMode ? 'bg-slate-700 text-slate-50 border-slate-600' : 'bg-slate-50 text-slate-900 border-slate-200';
           if (isFound) bgClass = darkMode
@@ -122,12 +129,7 @@ const GridBoard: React.FC<GridProps> = ({ grid, foundWords, onWordCheck, darkMod
               key={cell.id}
               data-row={rIndex}
               data-col={cIndex}
-              className={`
-                ${bgClass}
-                flex items-center justify-center 
-                text-lg sm:text-xl md:text-2xl font-bold rounded-md cursor-pointer 
-                transition-colors duration-150
-              `}
+              className={`${bgClass} flex items-center justify-center ${baseFontClasses} font-bold rounded-md cursor-pointer transition-colors duration-150`}
               onPointerDown={(e) => handlePointerDown(rIndex, cIndex, e)}
               onPointerMove={handlePointerMove}
               onPointerUp={handlePointerUp}
@@ -142,3 +144,4 @@ const GridBoard: React.FC<GridProps> = ({ grid, foundWords, onWordCheck, darkMod
 };
 
 export default GridBoard;
+

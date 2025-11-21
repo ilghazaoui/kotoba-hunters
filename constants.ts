@@ -1,6 +1,5 @@
 import { Word } from './types';
 
-export const GRID_SIZE = 10;
 export const WORD_COUNT_PER_GAME = 12;
 
 // A mix of common hiragana for filling empty spaces

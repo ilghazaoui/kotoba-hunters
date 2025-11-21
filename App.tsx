@@ -8,6 +8,7 @@ import WordList from './components/WordList';
 import { RefreshCw, Trophy, Moon, Sun } from 'lucide-react';
 
 const LEVELS: JlptLevel[] = ['N5', 'N4', 'N3', 'N2', 'N1'];
+const GRID_SIZES = [4, 5, 6, 7, 8, 9, 10];
 
 const App: React.FC = () => {
   const [gameWords, setGameWords] = useState<Word[]>([]);
@@ -20,18 +21,19 @@ const App: React.FC = () => {
   const [selectedLevel, setSelectedLevel] = useState<JlptLevel>('N5');
   const [showJapaneseHints, setShowJapaneseHints] = useState<boolean>(false);
   const [darkMode, setDarkMode] = useState<boolean>(false);
+  const [gridSize, setGridSize] = useState<number>(7);
 
   const startNewGame = useCallback(() => {
     if (!allWords.length) {
       return;
     }
-    const { grid: newGrid, placedWords } = generateGameGrid(allWords, WORD_COUNT_PER_GAME);
-    setGrid(newGrid);
+    const { grid: newGrid, placedWords } = generateGameGrid(allWords, WORD_COUNT_PER_GAME, gridSize);
+    setGrid(newGrid as any);
     setGameWords(placedWords);
     setFoundWordIds([]);
     setShowWinModal(false);
     setShowJapaneseHints(false);
-  }, [allWords]);
+  }, [allWords, gridSize]);
 
   // Charger les mots quand le niveau change
   useEffect(() => {
@@ -161,7 +163,7 @@ const App: React.FC = () => {
       </header>
 
       {/* Level selector above the grid */}
-      <div className="w-full max-w-[400px] mb-3 flex items-center justify-center gap-2">
+      <div className="w-full max-w-[400px] mb-2 flex items-center justify-center gap-2">
         {LEVELS.map(level => (
           <button
             key={level}
@@ -184,6 +186,32 @@ const App: React.FC = () => {
             {level}
           </button>
         ))}
+      </div>
+
+      {/* Grid size selector (cute, mobile-friendly) */}
+      <div className="w-full max-w-[400px] mb-3 flex items-center justify-center gap-1 text-xs">
+        <div className="flex flex-wrap justify-center gap-1">
+          {GRID_SIZES.map(size => (
+            <button
+              key={size}
+              type="button"
+              onClick={() => setGridSize(size)}
+              className={`px-2 py-1 rounded-full border font-semibold min-w-[44px]
+                ${
+                  size === gridSize
+                    ? darkMode
+                      ? 'bg-slate-100 text-slate-900 border-slate-200'
+                      : 'bg-slate-900 text-white border-slate-900'
+                    : darkMode
+                      ? 'bg-slate-800 text-slate-100 border-slate-600 hover:bg-slate-700'
+                      : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                }
+              `}
+            >
+              {size}×{size}
+            </button>
+          ))}
+        </div>
       </div>
 
       <main className="flex flex-col items-center w-full gap-4">
