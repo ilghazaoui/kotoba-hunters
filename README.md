@@ -41,6 +41,10 @@ The goal of the game:
   - continuous drag / touch (mobile and desktop),
   - the selection snaps to the closest cardinal/diagonal direction,
   - when a word is found, its tiles stay highlighted (green glow) on the grid.
+- **Controls panel**:
+  - a small **gear button** in the header lets you show/hide the JLPT level and grid size pills,
+  - when the controls are visible, the gear looks “pressed” (inverted colors, similar to the hints toggle),
+  - when hidden, the panel slides closed vertically, allowing the grid to move further up and freeing space for the grid and the word list.
 - **Word list**:
   - always available via a bottom sheet tab ("Word List"),
   - shows all target words, progress (`X / Y Found`),
@@ -66,7 +70,7 @@ The goal of the game:
 - **Styling**: Tailwind CSS (installed via PostCSS; no CDN in production).
 - **Bundler**: Vite (configured with `base: '/kotoba-hunters/'` for GitHub Pages).
 - **Language**: TypeScript.
-- **Tests**: [Vitest](https://vitest.dev/) for unit tests (currently used for `csvLoader`).
+- **Tests**: [Vitest](https://vitest.dev/) for unit and integration-style tests under `utils/`.
 - **Audio**: Web Audio API (oscillators) to generate sounds directly in JS (no MP3 assets).
 
 ---
@@ -75,7 +79,7 @@ The goal of the game:
 
 Top-level (excerpt):
 
-- `App.tsx` – main application component (global UI, levels, grid size, dark mode, hints, timer, win popup).
+- `App.tsx` – main application component (global UI, levels, grid size, dark mode, hints, timer, win popup, collapsible controls panel via a gear icon in the header).
 - `index.tsx` – React/Vite entry point.
 - `index.css` – Tailwind imports + custom keyframes (`pullUpDown` for the Word List tab animation).
 - `vite.config.ts` – Vite configuration (React plugin, `base` for GitHub Pages, `@` alias).
@@ -93,6 +97,9 @@ Main folders:
   - `wordSource.ts` – loads `data/nX.csv` files for each JLPT level (`N5`, `N4`, etc.).
   - `sound.ts` – sound engine (Web Audio oscillator + `navigator.vibrate` haptics).
   - `csvLoader.test.ts` – Vitest suite for `parseJlptCsv` and its normalization rules.
+  - `gridGenerator.test.ts` – Vitest suite for grid creation, word placement, and selection/reading helpers.
+  - `wordSource.test.ts` – Vitest suite for `loadWordsForLevel` with mocked `fetch`.
+  - `sound.test.ts` – Vitest smoke tests for `playSound` and `navigator.vibrate` usage.
 - `data/`
   - `n1.csv`, `n2.csv`, `n3.csv`, `n4.csv`, `n5.csv` – JLPT vocabulary per level.
 
@@ -177,11 +184,14 @@ This bundle is ready to deploy to GitHub Pages (see below).
 
 ## Testing
 
-The project uses [Vitest](https://vitest.dev/) for unit tests. A test suite exists for the CSV loader.
+The project uses [Vitest](https://vitest.dev/) for unit and small integration tests.
 
-Main test file:
+Existing test suites under `utils/`:
 
 - `utils/csvLoader.test.ts` – validates `parseJlptCsv` behavior and reading normalization.
+- `utils/gridGenerator.test.ts` – validates grid creation, word placement, and selection/reading helpers (`getSelectedCells` and `getWordFromCells`).
+- `utils/wordSource.test.ts` – validates `loadWordsForLevel` with a mocked `fetch` (success and error cases).
+- `utils/sound.test.ts` – smoke tests for `playSound`, ensuring it does not throw and calls `navigator.vibrate` when available.
 
 Run all tests:
 
@@ -189,7 +199,7 @@ Run all tests:
 npm run test
 ```
 
-Run only the CSV loader test:
+Run a single test file, for example the CSV loader:
 
 ```bash
 npx vitest run utils/csvLoader.test.ts
@@ -245,14 +255,14 @@ Sounds are handled in `utils/sound.ts` using the Web Audio API:
   - `tile-touch` – very short blip for each tile touched/entered during a drag,
   - `word-match` – ascending tone when a word is found,
   - `game-complete` – short celebratory melody (sequence of notes),
-  - `ui-soft` – subtle click for UI changes (levels, grid size, hints, word list tab).
+  - `ui-soft` – subtle click for UI changes (levels, grid size, hints, word list tab, gear controls).
 - **Haptics**:
   - `navigator.vibrate` is used when available, with short patterns (10–40 ms, or `[50, 80, 50]` for game completion).
 
 `playSound(id, { vibrate })` is called from:
 
 - `Grid.tsx` – start of selection and each new tile along the drag path,
-- `App.tsx` – for word match, game complete, level/grid size changes, hints toggle,
+- `App.tsx` – for word match, game complete, level/grid size changes, hints toggle, and controls gear,
 - `WordList.tsx` – on the Word List tab toggle.
 
 No external audio assets are required.
