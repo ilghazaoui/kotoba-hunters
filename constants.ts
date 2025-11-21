@@ -1,6 +1,14 @@
-import { Word } from './types';
-
 export const WORD_COUNT_PER_GAME = 12;
+
+export const getWordCountForGridSize = (size: number): number => {
+    if (size >= 10) return 24;
+    if (size >= 9) return 20;
+    if (size >= 8) return 16;
+    if (size >= 7) return 12;
+    if (size >= 6) return 10;
+    if (size >= 5) return 8;
+  return 6;
+};
 
 // A mix of common hiragana for filling empty spaces
 export const HIRAGANA_CHARS = [

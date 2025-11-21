@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Word, Grid as GridType } from './types';
-import { generateGameGrid } from './utils/gridGenerator';
-import { WORD_COUNT_PER_GAME } from './constants';
-import { loadWordsForLevel, JlptLevel } from './utils/wordSource';
+import React, {useCallback, useEffect, useState} from 'react';
+import {Grid as GridType, Word} from './types';
+import {generateGameGrid} from './utils/gridGenerator';
+import {getWordCountForGridSize} from './constants';
+import {JlptLevel, loadWordsForLevel} from './utils/wordSource';
 import GridBoard from './components/Grid';
 import WordList from './components/WordList';
-import { RefreshCw, Trophy, Moon, Sun } from 'lucide-react';
-import { playSound } from './utils/sound';
+import {Moon, RefreshCw, Sun, Trophy} from 'lucide-react';
+import {playSound} from './utils/sound';
 
 const LEVELS: JlptLevel[] = ['N5', 'N4', 'N3', 'N2', 'N1'];
 const GRID_SIZES = [4, 5, 6, 7, 8, 9, 10];
@@ -49,7 +49,8 @@ const App: React.FC = () => {
     if (!allWords.length) {
       return;
     }
-    const { grid: newGrid, placedWords } = generateGameGrid(allWords, WORD_COUNT_PER_GAME, gridSize);
+    const targetCount = getWordCountForGridSize(gridSize);
+    const { grid: newGrid, placedWords } = generateGameGrid(allWords, targetCount, gridSize);
     setGrid(newGrid as any);
     setGameWords(placedWords);
     setFoundWordIds([]);
