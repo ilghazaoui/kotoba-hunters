@@ -261,7 +261,11 @@ const App: React.FC = () => {
               {/* Show hints toggle under the grid */}
               <button
                 type="button"
-                onClick={() => setShowJapaneseHints(prev => !prev)}
+                onClick={() => {
+                  // Match level/grid UI sound behavior
+                  playSound('ui-soft', { vibrate: 10 });
+                  setShowJapaneseHints(prev => !prev);
+                }}
                 disabled={isLoadingWords || !!loadError || !allWords.length}
                 className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors
                   ${
