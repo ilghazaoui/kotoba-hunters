@@ -6,7 +6,7 @@ export type SoundId =
 
 let audioCtx: AudioContext | null = null;
 
-const ensureAudioContext = () => {
+const ensureAudioContext = async () => {
   if (typeof window === 'undefined') return null;
   if (!audioCtx) {
     try {
@@ -16,6 +16,13 @@ const ensureAudioContext = () => {
       audioCtx = null;
     }
   }
+  if (audioCtx && audioCtx.state === 'suspended') {
+    try {
+      await audioCtx.resume();
+    } catch {
+      // ignore resume failure
+    }
+  }
   return audioCtx;
 };
 
@@ -23,9 +30,39 @@ interface PlayOptions {
   vibrate?: number | number[];
 }
 
-const playBeep = (id: SoundId) => {
-  const ctx = ensureAudioContext();
+const playGameCompleteMelody = (ctx: AudioContext) => {
+  const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
+  const now = ctx.currentTime;
+  const noteDuration = 0.12;
+
+  notes.forEach((freq, index) => {
+    const startTime = now + index * (noteDuration + 0.03);
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(freq, startTime);
+
+    gain.gain.setValueAtTime(0.001, startTime);
+    gain.gain.linearRampToValueAtTime(0.14, startTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, startTime + noteDuration);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(startTime);
+    osc.stop(startTime + noteDuration + 0.05);
+  });
+};
+
+const playBeep = async (id: SoundId) => {
+  const ctx = await ensureAudioContext();
   if (!ctx) return;
+
+  if (id === 'game-complete') {
+    playGameCompleteMelody(ctx);
+    return;
+  }
 
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
@@ -46,11 +83,6 @@ const playBeep = (id: SoundId) => {
       startFreq = 640;
       endFreq = 780;
       break;
-    case 'game-complete':
-      duration = 0.4;
-      startFreq = 520;
-      endFreq = 1040;
-      break;
     case 'ui-soft':
       duration = 0.05;
       startFreq = 360;
@@ -63,7 +95,7 @@ const playBeep = (id: SoundId) => {
   osc.frequency.linearRampToValueAtTime(endFreq, ctx.currentTime + duration);
 
   gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-  const baseGain = id === 'game-complete' ? 0.12 : id === 'word-match' ? 0.08 : 0.04;
+  const baseGain = id === 'word-match' ? 0.08 : 0.04;
   gain.gain.linearRampToValueAtTime(baseGain, ctx.currentTime + 0.01);
   gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
 
@@ -76,7 +108,7 @@ const playBeep = (id: SoundId) => {
 
 export const playSound = (id: SoundId, options?: PlayOptions) => {
   try {
-    playBeep(id);
+    void playBeep(id);
     if (options?.vibrate !== undefined && navigator.vibrate) {
       navigator.vibrate(options.vibrate);
     }
@@ -84,4 +116,3 @@ export const playSound = (id: SoundId, options?: PlayOptions) => {
     // ignore failures
   }
 };
-
