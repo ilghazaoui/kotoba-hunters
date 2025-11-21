@@ -5,7 +5,7 @@ import { getSelectedCells, getWordFromCells } from '../utils/gridGenerator';
 interface GridProps {
   grid: Cell[][];
   foundWords: string[]; // IDs of found words
-  onWordCheck: (word: string) => Word | null; // Returns matched word object or null
+  onWordCheck: (word: string, path: Coordinate[]) => Word | null; // Returns matched word object or null
   darkMode?: boolean;
 }
 
@@ -72,14 +72,16 @@ const GridBoard: React.FC<GridProps> = ({ grid, foundWords, onWordCheck, darkMod
        (e.target as HTMLElement).releasePointerCapture(e.pointerId);
     }
 
-    // Validate word
     const selectedString = getWordFromCells(grid, selectedCells);
-    const reversedString = selectedString.split('').reverse().join('');
-    
-    // Check normal and reverse (in case user dragged backwards)
-    let found = onWordCheck(selectedString);
-    if (!found) {
-        found = onWordCheck(reversedString);
+
+    // Try original order
+    let matched = onWordCheck(selectedString, selectedCells);
+
+    // If not found, try reversed coordinates (opposite direction)
+    if (!matched && selectedCells.length >= 2) {
+      const reversedCoords = [...selectedCells].reverse();
+      const reversedString = getWordFromCells(grid, reversedCoords);
+      matched = onWordCheck(reversedString, reversedCoords);
     }
 
     setSelectionStart(null);
@@ -144,4 +146,3 @@ const GridBoard: React.FC<GridProps> = ({ grid, foundWords, onWordCheck, darkMod
 };
 
 export default GridBoard;
-

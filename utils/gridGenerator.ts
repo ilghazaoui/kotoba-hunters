@@ -1,10 +1,16 @@
 import { Cell, Word, Grid, Coordinate } from '../types';
 import { HIRAGANA_CHARS } from '../constants';
 
+// Allow placement in all 8 directions: horizontal, vertical, and diagonals, both ways.
 const DIRECTIONS = [
-  [0, 1],   // Horizontal
-  [1, 0],   // Vertical
-  [1, 1],   // Diagonal Down-Right
+  [0, 1],   // Right
+  [0, -1],  // Left
+  [1, 0],   // Down
+  [-1, 0],  // Up
+  [1, 1],   // Down-Right
+  [-1, -1], // Up-Left
+  [1, -1],  // Down-Left
+  [-1, 1],  // Up-Right
 ];
 
 export const createEmptyGrid = (size: number): Grid => {

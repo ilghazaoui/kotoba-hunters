@@ -95,8 +95,7 @@ const App: React.FC = () => {
     }
   }, [allWords, startNewGame]);
 
-  const handleWordCheck = (selectedString: string): Word | null => {
-    // Check if the selected string matches any of the game words
+  const handleWordCheck = (selectedString: string, path: { row: number; col: number }[]): Word | null => {
     const matchedWord = gameWords.find(
       w => w.hiragana === selectedString && !foundWordIds.includes(w.id)
     );
@@ -104,52 +103,25 @@ const App: React.FC = () => {
     if (matchedWord) {
       // Vibrate on mobile for feedback
       if (navigator.vibrate) navigator.vibrate(50);
-      
+
       const newFoundIds = [...foundWordIds, matchedWord.id];
       setFoundWordIds(newFoundIds);
 
-      // Mark cells as found in the grid visually
+      // Mark the exact path that matched as part of the word
       setGrid(prevGrid => {
-         const newGrid = prevGrid.map(row => row.map(cell => ({ ...cell })));
-         // Simple linear search for the word in directions (Horizontal, Vertical, Diagonal)
-         // This is a "repair" strategy since we didn't store placement.
-         const directions = [[0, 1], [1, 0], [1, 1]];
-         const len = selectedString.length;
-         const size = newGrid.length;
-         
-         for(let r=0; r<size; r++) {
-             for(let c=0; c<size; c++) {
-                 for(let [dr, dc] of directions) {
-                     // Check if word exists starting here
-                     let match = true;
-                     let coords = [];
-                     for(let i=0; i<len; i++) {
-                         const nr = r + dr*i;
-                         const nc = c + dc*i;
-                         if(nr >= size || nc >= size || newGrid[nr][nc].char !== selectedString[i]) {
-                             match = false;
-                             break;
-                         }
-                         coords.push({r: nr, c: nc});
-                     }
-                     
-                     if(match) {
-                         // Mark found
-                         coords.forEach(({r, c}) => {
-                             newGrid[r][c].isPartOfWord = true;
-                         });
-                         // We can break or continue (if word appears twice? unlikely for generated set)
-                     }
-                 }
-             }
-         }
-         return newGrid;
+        const newGrid = prevGrid.map(row => row.map(cell => ({ ...cell })));
+        path.forEach(({ row, col }) => {
+          if (newGrid[row] && newGrid[row][col]) {
+            newGrid[row][col].isPartOfWord = true;
+          }
+        });
+        return newGrid;
       });
 
       if (newFoundIds.length === gameWords.length) {
         setTimeout(() => setShowWinModal(true), 500);
       }
-      
+
       return matchedWord;
     }
     return null;
