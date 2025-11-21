@@ -2,43 +2,55 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Word, Grid as GridType } from './types';
 import { generateGameGrid } from './utils/gridGenerator';
 import { WORD_COUNT_PER_GAME } from './constants';
-import { loadN5Words } from './utils/wordSource';
+import { loadWordsForLevel, JlptLevel } from './utils/wordSource';
 import GridBoard from './components/Grid';
 import WordList from './components/WordList';
 import { RefreshCw, Trophy } from 'lucide-react';
+
+const LEVELS: JlptLevel[] = ['N5', 'N4', 'N3', 'N2', 'N1'];
 
 const App: React.FC = () => {
   const [gameWords, setGameWords] = useState<Word[]>([]);
   const [grid, setGrid] = useState<GridType>([]);
   const [foundWordIds, setFoundWordIds] = useState<string[]>([]);
   const [showWinModal, setShowWinModal] = useState(false);
-  const [allN5Words, setAllN5Words] = useState<Word[]>([]);
+  const [allWords, setAllWords] = useState<Word[]>([]);
   const [isLoadingWords, setIsLoadingWords] = useState<boolean>(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [selectedLevel, setSelectedLevel] = useState<JlptLevel>('N5');
 
   const startNewGame = useCallback(() => {
-    if (!allN5Words.length) {
+    if (!allWords.length) {
       return;
     }
-    const { grid: newGrid, placedWords } = generateGameGrid(allN5Words, WORD_COUNT_PER_GAME);
+    const { grid: newGrid, placedWords } = generateGameGrid(allWords, WORD_COUNT_PER_GAME);
     setGrid(newGrid);
     setGameWords(placedWords);
     setFoundWordIds([]);
     setShowWinModal(false);
-  }, [allN5Words]);
+  }, [allWords]);
 
+  // Charger les mots quand le niveau change
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
       setIsLoadingWords(true);
       setLoadError(null);
+      setAllWords([]);
+      setGameWords([]);
+      setGrid([]);
+      setFoundWordIds([]);
+      setShowWinModal(false);
       try {
-        const words = await loadN5Words();
+        const words = await loadWordsForLevel(selectedLevel);
         if (cancelled) return;
-        setAllN5Words(words);
+        setAllWords(words);
       } catch (e) {
         if (cancelled) return;
-        const msg = e instanceof Error ? e.message : 'Unknown error while loading N5 words';
+        const msg =
+          e instanceof Error
+            ? e.message
+            : `Unknown error while loading ${selectedLevel} words`;
         setLoadError(msg);
       } finally {
         if (!cancelled) setIsLoadingWords(false);
@@ -48,13 +60,13 @@ const App: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [selectedLevel]);
 
   useEffect(() => {
-    if (allN5Words.length) {
+    if (allWords.length) {
       startNewGame();
     }
-  }, [allN5Words, startNewGame]);
+  }, [allWords, startNewGame]);
 
   const handleWordCheck = (selectedString: string): Word | null => {
     // Check if the selected string matches any of the game words
@@ -120,31 +132,49 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-start p-4 font-sans pb-32">
       <header className="w-full max-w-[400px] flex items-center justify-between mb-4">
         <h1 className="text-2xl font-black text-slate-800 tracking-tight">Kotoba Hunters</h1>
-        <button 
+        <button
           onClick={startNewGame}
           className="p-2 bg-white rounded-full shadow-sm border border-slate-200 text-slate-600 hover:bg-slate-50 active:scale-95 transition-all disabled:opacity-50"
           aria-label="Restart Game"
-          disabled={isLoadingWords || !!loadError || !allN5Words.length}
+          disabled={isLoadingWords || !!loadError || !allWords.length}
         >
           <RefreshCw className="w-5 h-5" />
         </button>
       </header>
 
+      {/* Sélecteur de niveau, en haut de la grille */}
+      <div className="w-full max-w-[400px] mb-3 flex items-center justify-center gap-2">
+        {LEVELS.map(level => (
+          <button
+            key={level}
+            type="button"
+            onClick={() => setSelectedLevel(level)}
+            disabled={isLoadingWords && level === selectedLevel}
+            className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors
+              ${
+                level === selectedLevel
+                  ? 'bg-slate-900 text-white border-slate-900'
+                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+              }
+              ${isLoadingWords && level === selectedLevel ? 'opacity-60 cursor-default' : ''}
+            `}
+          >
+            {level}
+          </button>
+        ))}
+      </div>
+
       <main className="flex flex-col items-center w-full gap-4">
         {isLoadingWords && (
-          <p className="text-sm text-slate-500">Loading N5 words...</p>
+          <p className="text-sm text-slate-500">Loading {selectedLevel} words...</p>
         )}
         {loadError && (
           <p className="text-sm text-red-600">Failed to load words: {loadError}</p>
         )}
-        {!isLoadingWords && !loadError && !!allN5Words.length && (
+        {!isLoadingWords && !loadError && !!allWords.length && (
           <>
             <div className="relative w-full flex justify-center">
-              <GridBoard
-                grid={grid}
-                foundWords={foundWordIds}
-                onWordCheck={handleWordCheck}
-              />
+              <GridBoard grid={grid} foundWords={foundWordIds} onWordCheck={handleWordCheck} />
             </div>
 
             <WordList words={gameWords} foundWordIds={foundWordIds} />
@@ -180,3 +210,4 @@ const App: React.FC = () => {
 };
 
 export default App;
+

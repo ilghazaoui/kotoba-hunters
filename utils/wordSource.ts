@@ -1,27 +1,37 @@
 import { Word } from '../types';
-import { parseN5Csv } from './csvLoader';
+import { parseJlptCsv } from './csvLoader';
 
-export async function loadN5Words(): Promise<Word[]> {
-  // Utiliser le base path Vite (utile pour GitHub Pages avec base: '/kotoba-hunters/')
+export type JlptLevel = 'N1' | 'N2' | 'N3' | 'N4' | 'N5';
+
+function buildCsvUrl(level: JlptLevel): string {
   const base = (import.meta as any).env?.BASE_URL ?? (import.meta as any).env?.VITE_BASE_URL ?? '/';
   const normalizedBase = typeof base === 'string' ? base.replace(/\/$/, '') : '';
-  const csvUrl = `${normalizedBase || ''}/data/n5.csv` || '/data/n5.csv';
+  const levelDigit = level.substring(1); // 'N5' -> '5'
+  return `${normalizedBase || ''}/data/n${levelDigit}.csv` || `/data/n${levelDigit}.csv`;
+}
 
+export async function loadWordsForLevel(level: JlptLevel): Promise<Word[]> {
+  const csvUrl = buildCsvUrl(level);
   const response = await fetch(csvUrl);
   if (!response.ok) {
-    throw new Error(`Failed to load N5 words CSV (${csvUrl})`);
+    throw new Error(`Failed to load ${level} words CSV (${csvUrl})`);
   }
 
   const text = await response.text();
 
   try {
-    const words = parseN5Csv(text);
+    const words = parseJlptCsv(text);
     if (!words.length) {
-      throw new Error('No N5 words found in CSV after filtering');
+      throw new Error(`No ${level} words found in CSV after parsing`);
     }
     return words;
   } catch (err) {
-    console.error('Error while parsing N5 CSV', err);
-    throw err instanceof Error ? err : new Error('Unknown error while parsing N5 CSV');
+    console.error(`Error while parsing ${level} CSV`, err);
+    throw err instanceof Error ? err : new Error(`Unknown error while parsing ${level} CSV`);
   }
+}
+
+// Backward-compatible N5-specific loader used initially
+export async function loadN5Words(): Promise<Word[]> {
+  return loadWordsForLevel('N5');
 }
