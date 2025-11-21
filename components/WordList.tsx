@@ -70,6 +70,14 @@ const WordList: React.FC<WordListProps> = ({ words, foundWordIds, showJapaneseHi
               {words.map((word) => {
                 const isFound = foundWordIds.includes(word.id);
                 const showJapanese = isFound || showJapaneseHints;
+
+                // Decide how to display Japanese: if kanji and hiragana are identical,
+                // show only a single form; otherwise show "kanji (hiragana)".
+                const japaneseLabel =
+                  word.kanji === word.hiragana
+                    ? word.kanji
+                    : `${word.kanji} (${word.hiragana})`;
+
                 return (
                   <li
                     key={word.id}
@@ -106,7 +114,7 @@ const WordList: React.FC<WordListProps> = ({ words, foundWordIds, showJapaneseHi
                           ${showJapanese ? (darkMode ? 'text-slate-200 opacity-100 translate-y-0' : 'text-slate-700 opacity-100 translate-y-0') : 'opacity-0 -translate-y-2 h-0 overflow-hidden'}
                         `}
                       >
-                        {showJapanese ? `${word.kanji} (${word.hiragana})` : ''}
+                        {showJapanese ? japaneseLabel : ''}
                       </span>
                     </div>
                     {isFound && <Check className={`w-4 h-4 flex-shrink-0 ${darkMode ? 'text-emerald-300' : 'text-green-500'}`} />}
