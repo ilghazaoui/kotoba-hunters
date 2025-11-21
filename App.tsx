@@ -24,6 +24,8 @@ const App: React.FC = () => {
   const [showJapaneseHints, setShowJapaneseHints] = useState<boolean>(false);
   const [darkMode, setDarkMode] = useState<boolean>(false);
   const [gridSize, setGridSize] = useState<number>(7);
+  const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
+  const [isGameActive, setIsGameActive] = useState<boolean>(false);
 
   // Initialize dark mode from system preference / localStorage
   useEffect(() => {
@@ -45,6 +47,15 @@ const App: React.FC = () => {
     localStorage.setItem(DARK_MODE_STORAGE_KEY, darkMode ? 'true' : 'false');
   }, [darkMode]);
 
+  // Game timer effect
+  useEffect(() => {
+    if (!isGameActive) return;
+    const id = window.setInterval(() => {
+      setElapsedSeconds(prev => prev + 1);
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [isGameActive]);
+
   const startNewGame = useCallback(() => {
     if (!allWords.length) {
       return;
@@ -56,6 +67,8 @@ const App: React.FC = () => {
     setFoundWordIds([]);
     setShowWinModal(false);
     setShowJapaneseHints(false);
+    setElapsedSeconds(0);
+    setIsGameActive(true);
   }, [allWords, gridSize]);
 
   // Charger les mots quand le niveau change
@@ -120,6 +133,7 @@ const App: React.FC = () => {
       });
 
       if (newFoundIds.length === gameWords.length) {
+        setIsGameActive(false);
         setTimeout(() => {
           playSound('game-complete', { vibrate: [50, 80, 50] });
           setShowWinModal(true);
@@ -129,6 +143,14 @@ const App: React.FC = () => {
       return matchedWord;
     }
     return null;
+  };
+
+  const formatTime = (totalSeconds: number) => {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${seconds
+      .toString()
+      .padStart(2, '0')}`;
   };
 
   return (
@@ -259,11 +281,22 @@ const App: React.FC = () => {
                 />
               </div>
 
+              {/* Timer under lower right corner of grid */}
+              <div className="w-full max-w-[400px] flex justify-end px-3 -mt-1">
+                <div
+                  className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold tracking-tight
+                    ${darkMode
+                      ? 'bg-slate-900/80 text-slate-50 border-slate-700'
+                      : 'bg-white/80 text-slate-900 border-slate-200'}`}
+                >
+                  {formatTime(elapsedSeconds)}
+                </div>
+              </div>
+
               {/* Show hints toggle under the grid */}
               <button
                 type="button"
                 onClick={() => {
-                  // Match level/grid UI sound behavior
                   playSound('ui-soft', { vibrate: 10 });
                   setShowJapaneseHints(prev => !prev);
                 }}
@@ -318,8 +351,7 @@ const App: React.FC = () => {
               Nicely done!!
             </h2>
             <p className={darkMode ? 'text-slate-300 mb-6' : 'text-slate-600 mb-6'}>
-              You found all {gameWords.length} words!<br />
-              Great job practicing your Hiragana!
+              You found all {gameWords.length} words!
             </p>
             <button
               onClick={startNewGame}
@@ -331,7 +363,7 @@ const App: React.FC = () => {
           </div>
         </div>
       )}
-      
+
       <footer className="mt-8 text-slate-400 text-xs text-center">
       </footer>
     </div>
