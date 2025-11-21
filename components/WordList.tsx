@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Word } from '../types';
 import { ChevronDown, ChevronUp, Check } from 'lucide-react';
 import { playSound } from '../utils/sound';
@@ -12,9 +12,20 @@ interface WordListProps {
 
 const WordList: React.FC<WordListProps> = ({ words, foundWordIds, showJapaneseHints = false, darkMode = false }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [hintPulse, setHintPulse] = useState(false);
 
   const foundCount = foundWordIds.length;
   const totalCount = words.length;
+
+  // Trigger a small pull animation on the toggle button
+  // when hints are turned on while the list is closed.
+  useEffect(() => {
+    if (showJapaneseHints && !isOpen) {
+      setHintPulse(true);
+      const timeout = window.setTimeout(() => setHintPulse(false), 450);
+      return () => window.clearTimeout(timeout);
+    }
+  }, [showJapaneseHints, isOpen]);
 
   return (
     <div className="fixed bottom-0 left-0 right-0 flex justify-center z-50 pointer-events-none">
@@ -28,17 +39,22 @@ const WordList: React.FC<WordListProps> = ({ words, foundWordIds, showJapaneseHi
             setIsOpen(!isOpen);
             playSound('ui-soft', { vibrate: 8 });
           }}
-          className={`flex items-center justify-between w-full p-4 transition-colors rounded-t-none first:rounded-t-xl
+          className={`w-full p-4 rounded-t-none first:rounded-t-xl
             ${darkMode ? 'bg-slate-800 hover:bg-slate-700' : 'bg-slate-50 hover:bg-slate-100'}`}
         >
-          <div className="flex flex-col items-start">
-            <h2 className={`text-lg font-bold ${darkMode ? 'text-slate-100' : 'text-slate-800'}`}>Word List</h2>
-            <span className={`text-sm ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-              {foundCount} / {totalCount} Found
-            </span>
+          <div
+            className={`flex items-center justify-between w-full
+              ${hintPulse ? 'animate-[pullUpDown_0.45s_ease-out]' : ''}`}
+          >
+            <div className="flex flex-col items-start">
+              <h2 className={`text-lg font-bold ${darkMode ? 'text-slate-100' : 'text-slate-800'}`}>Word List</h2>
+              <span className={`text-sm ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                {foundCount} / {totalCount} Found
+              </span>
+            </div>
+            {/* Arrow Logic: Closed (Expand Up) -> Up. Open (Collapse Down) -> Down. */}
+            {isOpen ? <ChevronDown className={darkMode ? 'text-slate-400' : 'text-slate-400'} /> : <ChevronUp className={darkMode ? 'text-slate-400' : 'text-slate-400'} />}
           </div>
-          {/* Arrow Logic: Closed (Expand Up) -> Up. Open (Collapse Down) -> Down. */}
-          {isOpen ? <ChevronDown className={darkMode ? 'text-slate-400' : 'text-slate-400'} /> : <ChevronUp className={darkMode ? 'text-slate-400' : 'text-slate-400'} />}
         </button>
 
         {/* List Content (Expands Upwards) */}
