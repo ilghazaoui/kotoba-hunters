@@ -242,18 +242,32 @@ const App: React.FC = () => {
 
       {/* Win Modal */}
       {showWinModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
-          <div className="bg-white rounded-xl shadow-2xl p-8 max-w-sm w-full text-center transform animate-in zoom-in-95 duration-300">
-            <div className="mx-auto w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
-              <Trophy className="w-8 h-8 text-yellow-600" />
+        <div
+          className={`fixed inset-0 flex items-center justify-center z-50 p-4 animate-in fade-in duration-300
+            ${darkMode ? 'bg-black/70' : 'bg-black/50'}`}
+        >
+          <div
+            className={`rounded-xl shadow-2xl p-8 max-w-sm w-full text-center transform animate-in zoom-in-95 duration-300
+              ${darkMode ? 'bg-slate-900 border border-slate-700' : 'bg-white'}`}
+          >
+            <div
+              className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4
+                ${darkMode ? 'bg-yellow-900/40' : 'bg-yellow-100'}`}
+            >
+              <Trophy className={darkMode ? 'w-8 h-8 text-yellow-300' : 'w-8 h-8 text-yellow-600'} />
             </div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">Yatta! (やった!)</h2>
-            <p className="text-slate-600 mb-6">
+            <h2
+              className={`text-2xl font-bold mb-2 ${darkMode ? 'text-slate-50' : 'text-slate-900'}`}
+            >
+              Yatta! (やった!)
+            </h2>
+            <p className={darkMode ? 'text-slate-300 mb-6' : 'text-slate-600 mb-6'}>
               You found all {gameWords.length} words! Great job practicing your Hiragana.
             </p>
-            <button 
+            <button
               onClick={startNewGame}
-              className="w-full py-3 px-4 bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800 transition-colors shadow-lg active:translate-y-0.5"
+              className={`w-full py-3 px-4 font-bold rounded-lg transition-colors shadow-lg active:translate-y-0.5
+                ${darkMode ? 'bg-slate-100 text-slate-900 hover:bg-slate-200' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
             >
               Play Again
             </button>
