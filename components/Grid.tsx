@@ -125,10 +125,12 @@ const GridBoard: React.FC<GridProps> = ({ grid, foundWords, onWordCheck, darkMod
           const isSelected = isCellSelected(rIndex, cIndex);
           const isFound = cell.isPartOfWord;
 
-          let bgClass = darkMode ? 'bg-slate-700 text-slate-50 border-slate-600' : 'bg-slate-50 text-slate-900 border-slate-200';
+          let bgClass = darkMode
+            ? 'bg-slate-700 text-slate-50 border-slate-600'
+            : 'bg-slate-100 text-slate-900 border-slate-300 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.6)]';
           if (isFound) bgClass = darkMode
             ? 'bg-emerald-900 text-emerald-200 border-emerald-700'
-            : 'bg-green-100 text-green-800 border-green-200';
+            : 'bg-green-100 text-green-800 border-green-300 shadow-[inset_0_0_0_1px_rgba(74,222,128,0.7)]';
           if (isSelected) bgClass = 'bg-blue-500 text-white scale-105 z-10 shadow-md transform transition-transform';
 
           return (
@@ -136,7 +138,7 @@ const GridBoard: React.FC<GridProps> = ({ grid, foundWords, onWordCheck, darkMod
               key={cell.id}
               data-row={rIndex}
               data-col={cIndex}
-              className={`${bgClass} flex items-center justify-center ${baseFontClasses} font-bold rounded-md cursor-pointer transition-colors duration-150`}
+              className={`${bgClass} flex items-center justify-center ${baseFontClasses} font-bold rounded-md cursor-pointer transition-colors duration-150 border`}
               onPointerDown={(e) => handlePointerDown(rIndex, cIndex, e)}
               onPointerMove={handlePointerMove}
               onPointerUp={handlePointerUp}
