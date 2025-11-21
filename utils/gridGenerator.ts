@@ -35,8 +35,8 @@ const canPlaceWord = (grid: Grid, word: string, row: number, col: number, dr: nu
     if (r < 0 || r >= size || c < 0 || c >= size) return false;
     
     const cellChar = grid[r][c].char;
-    // Must be empty or match the character we want to place
-    if (cellChar !== '' && cellChar !== word[i]) return false;
+    // To avoid intersections, every cell must be empty (no shared letters)
+    if (cellChar !== '') return false;
   }
   return true;
 };

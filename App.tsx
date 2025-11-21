@@ -297,10 +297,11 @@ const App: React.FC = () => {
             <h2
               className={`text-2xl font-bold mb-6 ${darkMode ? 'text-slate-50' : 'text-slate-900'}`}
             >
-              やった!!
+              Nicely done!!
             </h2>
             <p className={darkMode ? 'text-slate-300 mb-6' : 'text-slate-600 mb-6'}>
-              You found all {gameWords.length} words! Great job practicing your Hiragana.
+              You found all {gameWords.length} words!<br />
+              Great job practicing your Hiragana!
             </p>
             <button
               onClick={startNewGame}
